@@ -31,7 +31,6 @@ char* strndup(const char* s, size_t n) {
 }
 #endif
 
-
 #include "D:/ProgTools/curl-8.13.0/include/curl/curl.h"
 #include "D:/ProgTools/cJSON-master/cJSON.h"
 
@@ -224,7 +223,7 @@ boolean gsheet_delete_row(GSheetClient* client, int sheet_id, int row) {
     cJSON* delete_dim = cJSON_CreateObject();
     cJSON* range = cJSON_AddObjectToObject(delete_dim, "deleteDimension");
     cJSON* dim = cJSON_AddObjectToObject(range, "dimension");
-    cJSON_AddStringToObject(dim, "sheetId", cJSON_CreateNumber(sheet_id));
+    cJSON_AddNumberToObject(dim, "sheetId", sheet_id);
     cJSON_AddStringToObject(dim, "dimension", "ROWS");
     cJSON_AddNumberToObject(dim, "startIndex", row);
     cJSON_AddNumberToObject(dim, "endIndex", row + 1);
@@ -320,27 +319,9 @@ SheetRange* gsheet_read_cell(GSheetClient* client, int row, int col) {
 boolean gsheet_append_row(GSheetClient* client, const char* sheet_name, char** row_data, size_t cols) {
     char range[64];
     snprintf(range, sizeof(range), "%s!A:A", sheet_name);
-    SheetRange data = { .rows = 1, .cols = cols, .data = &row_data };
+    SheetRange data = { .rows = 1, .cols = cols, .data = row_data };
     return gsheet_write_range(client, range, &data);
 }
-
-
-// 14. Сортировка
-// boolean gsheet_sort_range(GSheetClient* client, const char* range, int column_index) {
-//     cJSON* requests = cJSON_CreateArray();
-//     cJSON* sort_range = cJSON_CreateObject();
-//     cJSON_AddItemToObject(sort_range, "sortRange", 
-//         cJSON_CreateObject(
-//             "range", cJSON_CreateString(range),"sortSpecs", cJSON_CreateArray(
-//                 cJSON_CreateObject(
-//                     "dimensionIndex", column_index,
-//                     "sortOrder", "ASCENDING"
-//                 )
-//             )
-//         )
-//     );
-//     return gsheet_batch_update(client, requests);
-// }
 
 // 14. Сортировка
 int gsheet_sort_range(GSheetClient* client, const char* range, int column_index) {
@@ -376,7 +357,7 @@ int gsheet_sort_range(GSheetClient* client, const char* range, int column_index)
 }
 
 // 15. Установка формулы
-boolean gsheet_set_formula(GSheetClient* client, const char* cell, const char* formula) {
+boolean gsheet_set_formula(GSheetClient* client, const char* cell, char* formula) {
     SheetRange data = {
         .rows = 1,
         .cols = 1,
@@ -384,20 +365,6 @@ boolean gsheet_set_formula(GSheetClient* client, const char* cell, const char* f
     };
     return gsheet_write_range(client, cell, &data);
 }
-
-// 16. Объединение ячеек
-// boolean gsheet_merge_cells(GSheetClient* client, const char* range) {
-//     cJSON* requests = cJSON_CreateArray();
-//     cJSON_AddItemToArray(requests, 
-//         cJSON_CreateObject(
-//             "mergeCells", cJSON_CreateObject(
-//                 "range", cJSON_CreateString(range),
-//                 "mergeType", "MERGE_ALL"
-//             )
-//         )
-//     );
-//     return gsheet_batch_update(client, requests);
-// }
 
 // 16. Объединение ячеек
 int gsheet_merge_cells(GSheetClient* client, const char* range) {
@@ -422,23 +389,6 @@ int gsheet_merge_cells(GSheetClient* client, const char* range) {
     cJSON_Delete(requests);
     return result;
 }
-
-// 17. Поиск в таблице
-// char** gsheet_search(GSheetClient* client, const char* query, int* result_count) {
-//     // Использует Sheets API findReplace
-//     cJSON* requests = cJSON_CreateArray();
-//     cJSON_AddItemToArray(requests, 
-//         cJSON_CreateObject(
-//             "findReplace", cJSON_CreateObject(
-//                 "find", query,
-//                 "allSheets", cJSON_True
-//             )
-//         )
-//     );
-//     // Отправка запроса и парсинг результатов
-//     // ...
-//     return search_results;
-// }
 
 // 17. Поиск в таблице
 char** gsheet_search(GSheetClient* client, const char* query, int* result_count) {
@@ -488,6 +438,19 @@ char** gsheet_search(GSheetClient* client, const char* query, int* result_count)
     free(response);
     
     return search_results;
+}
+
+// 18. Экспорт в CSV
+boolean gsheet_export_csv(GSheetClient* client, const char* range, const char* filename) {
+    SheetRange* data = gsheet_read_range(client, range);
+    if (!data) return FALSE;
+
+    FILE* fp = fopen(filename, "w");
+    for (size_t i = 0; i < data->rows; i++) {
+        fprintf(fp, "%s\n", data->data[i]);
+    }
+    fclose(fp);
+    return TRUE;
 }
 
 int main() {
