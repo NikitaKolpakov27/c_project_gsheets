@@ -1,0 +1,2 @@
+C:/Users/MateBook/Desktop/mine_c/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/MateBook/Desktop/mine_c/build/CMakeFiles/ZERO_CHECK.dir
