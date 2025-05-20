@@ -2,6 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+// #include <curl/include/curl/curl.h>
+// #include <cJSON-master/cJSON.h>
+#include <curl/curl.h>
+#include <cJSON.h>
+
 
 // Объявляем прототипы функций для Windows
 #if defined(_WIN32) && !defined(strnlen)
@@ -18,7 +24,6 @@ size_t strnlen(const char* s, size_t maxlen) {
 }
 #endif
 
-// Реализация strndup для систем без POSIX
 #ifndef _POSIX_C_SOURCE
 char* strndup(const char* s, size_t n) {
     size_t len = strnlen(s, n);
@@ -30,9 +35,6 @@ char* strndup(const char* s, size_t n) {
     return new;
 }
 #endif
-
-#include "D:/ProgTools/curl-8.13.0/include/curl/curl.h"
-#include "D:/ProgTools/cJSON-master/cJSON.h"
 
 // Структуры данных
 typedef struct {
@@ -340,6 +342,7 @@ int gsheet_sort_range(GSheetClient* client, const char* range, int column_index)
     cJSON_AddNumberToObject(spec, "dimensionIndex", column_index);
     cJSON_AddStringToObject(spec, "sortOrder", "ASCENDING");
     cJSON_AddItemToArray(sort_specs, spec);
+    printf("Hello there!\n");
     
     // Добавляем sortSpecs в sortRange
     cJSON_AddItemToObject(sort_range, "sortSpecs", sort_specs);
@@ -454,6 +457,7 @@ boolean gsheet_export_csv(GSheetClient* client, const char* range, const char* f
 }
 
 int main() {
+    printf("Hello!\n");
     curl_global_init(CURL_GLOBAL_ALL);
     GSheetClient* client = gsheet_init("YOUR_TOKEN", NULL);
 

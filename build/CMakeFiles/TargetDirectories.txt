@@ -1,2 +1,3 @@
-C:/Users/MateBook/Desktop/mine_c/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/MateBook/Desktop/mine_c/build/CMakeFiles/ZERO_CHECK.dir
+C:/Users/MateBook/Desktop/c_project_gsheets-main/build/CMakeFiles/google_sheets.dir
+C:/Users/MateBook/Desktop/c_project_gsheets-main/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/MateBook/Desktop/c_project_gsheets-main/build/CMakeFiles/ZERO_CHECK.dir

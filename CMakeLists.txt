@@ -1,57 +1,59 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.25)
 project(google_sheets C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-# Настройки для библиотек
-set(CURL_ROOT "D:/ProgTools/mingw32/include/curl-8.13.0")    # Укажите ваш путь к CURL
-set(CJSON_ROOT "D:/ProgTools/cJSON-master")  # Укажите ваш путь к cJSON
+# Указываем пути к cURL
+set(CURL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third_party/curl")
+set(CURL_INCLUDE_DIR "${CURL_ROOT}/include")  # Путь до include (без /curl!)
+set(CURL_LIBRARY "${CURL_ROOT}/lib/libcurl.dll.a")  # Для MSVC
 
-# Поиск необходимых библиотек
-find_package(CURL REQUIRED)
-find_package(cJSON REQUIRED)
+# Указываем пути к cjson
+set(CJSON_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third_party/cJSON-master")
+#set(CJSON_LIBRARY "${CJSON_ROOT}/cJSON.c")
 
-# Добавление исполняемого файла
-add_executable(google_sheets
+# Проверка существования файлов (CURL)
+if(NOT EXISTS "${CURL_INCLUDE_DIR}/curl/curl.h")
+    message(FATAL_ERROR "Файл curl.h не найден! Проверьте: ${CURL_INCLUDE_DIR}/curl/curl.h")
+endif()
+
+if(NOT EXISTS "${CURL_LIBRARY}")
+    message(FATAL_ERROR "Библиотека не найдена: ${CURL_LIBRARY}")
+endif()
+
+
+
+# Проверка существования файлов (cjson)
+if(NOT EXISTS "${CJSON_ROOT}/cJSON.h")
+    message(FATAL_ERROR "Файл cJSON.h не найден! ")
+endif()
+
+# Создание исполняемого файла
+add_executable(google_sheets 
     google_sheets.c
+    "${CMAKE_CURRENT_SOURCE_DIR}/third_party/cJSON-master/cJSON.c"
 )
 
-# Подключение библиотек
-target_include_directories(google_sheets PRIVATE
-    ${CURL_INCLUDE_DIR}
-    ${CJSON_INCLUDE_DIR}
+# Подключение заголовков
+target_include_directories(google_sheets PRIVATE 
+    ${CURL_INCLUDE_DIR}  # Путь должен указывать на папку include (не include/curl!)
+    ${CJSON_ROOT}  
 )
 
-target_link_libraries(google_sheets
-    ${CURL_LIBRARIES}
-    ${cJSON_LIBRARY}
+# Линковка библиотеки
+target_link_libraries(google_sheets PRIVATE 
+    ${CURL_LIBRARY}
+    ${CJSON_LIBRARY}
 )
 
-# Для Windows добавляем системные библиотеки
+# Для Windows
 if(WIN32)
-    target_link_libraries(google_sheets
+    target_link_libraries(google_sheets PRIVATE
         wldap32
         ws2_32
         crypt32
         advapi32
     )
-    
-    # Добавляем определение для Windows-специфичных функций
-    target_compile_definitions(google_sheets PRIVATE
-        -D_WIN32
-    )
-endif()
-
-# Пути к библиотекам (если не найдены через find_package)
-if(NOT CURL_FOUND)
-    message(WARNING "Using manual CURL paths")
-    include_directories(${CURL_ROOT}/include)
-    link_directories(${CURL_ROOT}/lib)
-endif()
-
-if(NOT cJSON_FOUND)
-    message(WARNING "Using manual cJSON paths")
-    include_directories(${CJSON_ROOT})
-    link_directories(${CJSON_ROOT}/build)
+    target_compile_definitions(google_sheets PRIVATE -D_WIN32)
 endif()

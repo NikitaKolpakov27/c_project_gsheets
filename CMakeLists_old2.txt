@@ -1,0 +1,123 @@
+# cmake_minimum_required(VERSION 3.25)
+# project(google_sheets C)
+
+# set(CMAKE_C_STANDARD 11)
+# set(CMAKE_C_STANDARD_REQUIRED ON)
+
+# find_package(CURL curl)
+
+# # Убедитесь, что пути к библиотекам указаны правильно
+# set(CURL_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/curl/include/curl")
+# set(CURL_LIBRARIES "${CMAKE_CURRENT_SOURCE_DIR}/third_party/curl")
+
+# # Добавление исполняемого файла
+# add_executable(google_sheets
+#     google_sheets.c
+# )
+
+# target_include_directories(google_sheets PRIVATE ${CURL_INCLUDE_DIRS})
+# target_link_libraries(google_sheets PRIVATE ${CURL_LIBRARIES})
+
+
+
+
+cmake_minimum_required(VERSION 3.25)
+project(google_sheets C)
+
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+set(CURL_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/curl/include")
+set(CURL_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/third_party/curl/lib/libcurl.dll.a")
+
+set(CURL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third_party/curl")
+set(CURL_INCLUDE_DIRS "${CURL_ROOT}/include")       # Путь к заголовкам
+set(CURL_LIBRARIES "${CURL_ROOT}/lib/libcurl.a")
+
+if(NOT EXISTS "${CURL_INCLUDE_DIRS}/curl/curl.h")
+    message(FATAL_ERROR "Заголовочный файл cURL не найден! Проверьте путь: ${CURL_INCLUDE_DIRS}/curl/curl.h")
+endif()
+
+if(NOT EXISTS "${CURL_LIBRARIES}")
+    message(FATAL_ERROR "Библиотека cURL не найдена! Проверьте путь: ${CURL_LIBRARIES}")
+endif()
+
+# Поиск библиотеки CURL
+find_package(CURL REQUIRED)
+
+# Создание исполняемого файла
+add_executable(google_sheets
+    google_sheets.c  # Убедитесь, что файл существует!
+)
+
+# Подключение заголовочных файлов CURL
+target_include_directories(google_sheets PRIVATE 
+    ${CURL_INCLUDE_DIRS}
+)
+
+# Линковка с CURL
+target_link_libraries(google_sheets PRIVATE 
+    ${CURL_LIBRARIES}
+)
+
+# Для Windows
+# if(WIN32)
+#     target_link_libraries(google_sheets PRIVATE
+#         wldap32
+#         ws2_32
+#         crypt32
+#         advapi32
+#     )
+#     target_compile_definitions(google_sheets PRIVATE -D_WIN32)
+# endif()
+
+if(WIN32)
+    add_custom_command(TARGET google_sheets POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "${CURL_ROOT}/lib/libcurl.dll"
+            "$<TARGET_FILE_DIR:google_sheets>"
+        COMMENT "Копирование libcurl.dll..."
+    )
+endif()
+
+# Линковка с математической библиотекой (для Linux/macOS)
+if(UNIX AND NOT APPLE)
+    target_link_libraries(google_sheets PRIVATE m)
+endif()
+
+
+
+
+####### 111
+# # Проверка наличия файлов
+# if(NOT EXISTS ${CJSON_SOURCE})
+#     message(FATAL_ERROR "Файл cJSON.c не найден по пути: ${CJSON_SOURCE}")
+# endif()
+
+# # Добавление исполняемого файла
+# add_executable(google_sheets
+#     google_sheets.c
+#     ${CJSON_SOURCE}
+# )
+
+# # Подключение заголовочных файлов
+# target_include_directories(google_sheets PRIVATE
+#     ${CURL_INCLUDE_DIR}/curl
+#     ${CJSON_INCLUDE_DIR}
+# )
+
+# # Для Windows
+# if(WIN32)
+#     target_link_libraries(google_sheets
+#         PRIVATE
+#         wldap32
+#         ws2_32
+#         crypt32
+#         advapi32
+#         curl
+#     )
+#     target_compile_definitions(google_sheets PRIVATE -D_WIN32)
+# endif()
+
+# # Линковка с математической библиотекой
+# target_link_libraries(google_sheets PRIVATE m)

@@ -1,0 +1,10 @@
+^C:\USERS\MATEBOOK\DESKTOP\C_PROJECT_GSHEETS-MAIN\BUILD\CMAKEFILES\78999FA5F46AB749C34849D68AAF047C\GENERATE.STAMP.RULE
+setlocal
+D:\ProgTools\CMake\bin\cmake.exe -SC:/Users/MateBook/Desktop/c_project_gsheets-main -BC:/Users/MateBook/Desktop/c_project_gsheets-main/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/MateBook/Desktop/c_project_gsheets-main/build/google_sheets.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
