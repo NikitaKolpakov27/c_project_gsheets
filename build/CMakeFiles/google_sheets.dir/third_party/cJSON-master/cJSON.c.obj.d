@@ -1,0 +1,21 @@
+CMakeFiles/google_sheets.dir/third_party/cJSON-master/cJSON.c.obj: \
+ C:\Users\MateBook\Desktop\c_project_gsheets-main\third_party\cJSON-master\cJSON.c \
+ d:\progtools\mingw32\include\string.h \
+ d:\progtools\mingw32\include\_mingw.h \
+ d:\progtools\mingw32\include\msvcrtver.h \
+ d:\progtools\mingw32\include\w32api.h \
+ d:\progtools\mingw32\include\sdkddkver.h \
+ d:\progtools\mingw32\lib\gcc\mingw32\6.3.0\include\stddef.h \
+ d:\progtools\mingw32\include\strings.h \
+ d:\progtools\mingw32\include\wchar.h \
+ d:\progtools\mingw32\include\stdio.h \
+ d:\progtools\mingw32\include\sys/types.h \
+ d:\progtools\mingw32\lib\gcc\mingw32\6.3.0\include\stdarg.h \
+ d:\progtools\mingw32\include\math.h \
+ d:\progtools\mingw32\include\stdlib.h \
+ d:\progtools\mingw32\include\limits.h \
+ d:\progtools\mingw32\include\ctype.h \
+ d:\progtools\mingw32\include\wctype.h \
+ d:\progtools\mingw32\lib\gcc\mingw32\6.3.0\include\float.h \
+ d:\progtools\mingw32\include\float.h \
+ C:\Users\MateBook\Desktop\c_project_gsheets-main\third_party\cJSON-master\cJSON.h

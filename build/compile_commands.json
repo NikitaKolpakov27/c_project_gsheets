@@ -1,0 +1,14 @@
+[
+{
+  "directory": "C:/Users/MateBook/Desktop/c_project_gsheets-main/build",
+  "command": "D:\\ProgTools\\mingw32\\bin\\gcc.exe -D_WIN32 @CMakeFiles/google_sheets.dir/includes_C.rsp -O3 -DNDEBUG -std=gnu11 -o CMakeFiles\\google_sheets.dir\\google_sheets.c.obj -c C:\\Users\\MateBook\\Desktop\\c_project_gsheets-main\\google_sheets.c",
+  "file": "C:/Users/MateBook/Desktop/c_project_gsheets-main/google_sheets.c",
+  "output": "CMakeFiles/google_sheets.dir/google_sheets.c.obj"
+},
+{
+  "directory": "C:/Users/MateBook/Desktop/c_project_gsheets-main/build",
+  "command": "D:\\ProgTools\\mingw32\\bin\\gcc.exe -D_WIN32 @CMakeFiles/google_sheets.dir/includes_C.rsp -O3 -DNDEBUG -std=gnu11 -o CMakeFiles\\google_sheets.dir\\third_party\\cJSON-master\\cJSON.c.obj -c C:\\Users\\MateBook\\Desktop\\c_project_gsheets-main\\third_party\\cJSON-master\\cJSON.c",
+  "file": "C:/Users/MateBook/Desktop/c_project_gsheets-main/third_party/cJSON-master/cJSON.c",
+  "output": "CMakeFiles/google_sheets.dir/third_party/cJSON-master/cJSON.c.obj"
+}
+]

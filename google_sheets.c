@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-// #include <curl/include/curl/curl.h>
-// #include <cJSON-master/cJSON.h>
 #include <curl/curl.h>
 #include <cJSON.h>
 
@@ -24,7 +22,6 @@ size_t strnlen(const char* s, size_t maxlen) {
 }
 #endif
 
-#ifndef _POSIX_C_SOURCE
 char* strndup(const char* s, size_t n) {
     size_t len = strnlen(s, n);
     char* new = malloc(len + 1);
@@ -34,7 +31,6 @@ char* strndup(const char* s, size_t n) {
     }
     return new;
 }
-#endif
 
 // Структуры данных
 typedef struct {
@@ -43,7 +39,7 @@ typedef struct {
 } GSheetClient;
 
 typedef struct {
-    char** data;
+    char*** data;
     size_t rows;
     size_t cols;
 } SheetRange;
@@ -61,7 +57,27 @@ static char* build_auth_header(GSheetClient* client) {
     return header;
 }
 
+void gsheet_free(GSheetClient* client) {
+    if (!client) return;
+    free(client->access_token);
+    free(client->spreadsheet_id);
+    free(client);
+}
+
+void gsheet_free_range(SheetRange* range) {
+    if (!range) return;
+    for (size_t i = 0; i < range->rows; i++) {
+        for (size_t j = 0; j < range->cols; j++) {
+            free(range->data[i][j]);
+        }
+        free(range->data[i]);
+    }
+    free(range->data);
+    free(range);
+}
+
 // Основные методы
+// 1. Initialization of client
 GSheetClient* gsheet_init(const char* access_token, const char* spreadsheet_id) {
     GSheetClient* client = malloc(sizeof(GSheetClient));
     client->access_token = strdup(access_token);
@@ -69,10 +85,12 @@ GSheetClient* gsheet_init(const char* access_token, const char* spreadsheet_id) 
     return client;
 }
 
+// 2. read gsheet in specified range
 SheetRange* gsheet_read_range(GSheetClient* client, const char* range) {
     CURL* curl = curl_easy_init();
     char* response = NULL;
     char url[256];
+    long http_code = 0;
 
     snprintf(url, sizeof(url),
         "https://sheets.googleapis.com/v4/spreadsheets/%s/values/%s",
@@ -89,15 +107,40 @@ SheetRange* gsheet_read_range(GSheetClient* client, const char* range) {
 
     CURLcode res = curl_easy_perform(curl);
 
+    // Получите HTTP-статус ответа
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+    printf("[DEBUG] HTTP Status: %ld\n", http_code);
+    printf("[DEBUG] Response: %s\n", response);
+
     SheetRange* result = NULL;
-    if (res == CURLE_OK) {
+    if (res == CURLE_OK && http_code == 200 && response) {
         cJSON* root = cJSON_Parse(response);
-        cJSON* values = cJSON_GetObjectItem(root, "values");
+        if (root) {
+            cJSON* values = cJSON_GetObjectItem(root, "values");
+            if (values && cJSON_IsArray(values)) {
+                result = malloc(sizeof(SheetRange));
+                result->rows = cJSON_GetArraySize(values);
+                result->cols = 0;
+                result->data = malloc(result->rows * sizeof(char**));
 
-        // Парсинг значений в структуру SheetRange
-        // ... (реализация парсинга)
+                for (size_t i = 0; i < result->rows; i++) {
+                    cJSON* row = cJSON_GetArrayItem(values, i);
+                    if (row && cJSON_IsArray(row)) {
+                        result->data[i] = malloc(cJSON_GetArraySize(row) * sizeof(char*));
+                        result->cols = cJSON_GetArraySize(row);
 
-        cJSON_Delete(root);
+                        for (size_t j = 0; j < result->cols; j++) {
+                            cJSON* cell = cJSON_GetArrayItem(row, j);
+                            result->data[i][j] = strdup(cJSON_GetStringValue(cell));
+                        }
+                    }
+                }
+            }
+            cJSON_Delete(root);
+        }
+    } else {
+        fprintf(stderr, "HTTP Error: %ld\n", http_code);
+        if (response) fprintf(stderr, "Response: %s\n", response);
     }
 
     curl_easy_cleanup(curl);
@@ -105,6 +148,7 @@ SheetRange* gsheet_read_range(GSheetClient* client, const char* range) {
     return result;
 }
 
+// 3. Write in smth range
 boolean gsheet_write_range(GSheetClient* client, const char* range, SheetRange* data) {
     CURL* curl = curl_easy_init();
     char url[256];
@@ -117,7 +161,13 @@ boolean gsheet_write_range(GSheetClient* client, const char* range, SheetRange* 
     cJSON* values = cJSON_AddArrayToObject(root, "values");
 
     // Преобразование SheetRange в JSON
-    // ... (реализация преобразования)
+    for (size_t i = 0; i < data->rows; i++) {
+        cJSON* row = cJSON_CreateArray();
+        for (size_t j = 0; j < data->cols; j++) {
+            cJSON_AddItemToArray(row, cJSON_CreateString(data->data[i][j]));
+        }
+        cJSON_AddItemToArray(values, row);
+    }
 
     char* payload = cJSON_PrintUnformatted(root);
 
@@ -128,8 +178,16 @@ boolean gsheet_write_range(GSheetClient* client, const char* range, SheetRange* 
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, payload);
+    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
 
     CURLcode res = curl_easy_perform(curl);
+    long http_code = 0;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+
+    boolean success = (res == CURLE_OK && http_code == 200);
+    if (!success) {
+        fprintf(stderr, "Write failed. HTTP Code: %ld\n", http_code);
+    }
 
     cJSON_Delete(root);
     free(payload);
@@ -318,7 +376,7 @@ SheetRange* gsheet_read_cell(GSheetClient* client, int row, int col) {
 }
 
 // 13. Добавление строки в таблицу
-boolean gsheet_append_row(GSheetClient* client, const char* sheet_name, char** row_data, size_t cols) {
+boolean gsheet_append_row(GSheetClient* client, const char* sheet_name, char*** row_data, size_t cols) {
     char range[64];
     snprintf(range, sizeof(range), "%s!A:A", sheet_name);
     SheetRange data = { .rows = 1, .cols = cols, .data = row_data };
@@ -360,11 +418,11 @@ int gsheet_sort_range(GSheetClient* client, const char* range, int column_index)
 }
 
 // 15. Установка формулы
-boolean gsheet_set_formula(GSheetClient* client, const char* cell, char* formula) {
+boolean gsheet_set_formula(GSheetClient* client, const char* cell, char*** formula) {
     SheetRange data = {
         .rows = 1,
         .cols = 1,
-        .data = (char*[]){ formula }
+        .data = formula
     };
     return gsheet_write_range(client, cell, &data);
 }
@@ -457,23 +515,34 @@ boolean gsheet_export_csv(GSheetClient* client, const char* range, const char* f
 }
 
 int main() {
-    printf("Hello!\n");
-    curl_global_init(CURL_GLOBAL_ALL);
-    GSheetClient* client = gsheet_init("YOUR_TOKEN", NULL);
-
-    // 1. Создать новую таблицу
-    char* new_id = gsheet_create_spreadsheet(client, "My New Sheet");
-    if (new_id) {
-        printf("Created Spreadsheet ID: %s\n", new_id);
-        free(new_id);
+    
+    // Инициализация клиента
+    const char* access_token = "";
+    const char* spreadsheet_id = "";
+    GSheetClient* client = gsheet_init(access_token, spreadsheet_id);
+    
+    if (!client) {
+        fprintf(stderr, "Cannot init client\n");
+        return 1;
     }
 
-    // 2. Добавить лист
-    gsheet_add_sheet(client, "Financials");
+    // Чтение данных из диапазона (например, лист "Sheet1", ячейки A1:C10)
+    const char* range = "Sheet1!A1:E1";
+    SheetRange* data = gsheet_read_range(client, range);
 
-    // 3. Экспорт в CSV
-    gsheet_export_csv(client, "Sheet1!A1:C10", "data.csv");
+    if (!data) {
+        fprintf(stderr, "Cannot read data from gsheet\n");
+        return 1;
+    }
 
-    curl_global_cleanup();
+    // Вывод данных в консоль
+    printf("Data from range %s:\n", range);
+    for (size_t i = 0; i < data->rows; i++) {
+        for (size_t j = 0; j < data->cols; j++) {
+            printf("%-20s", data->data[i][j]); // Форматированный вывод
+        }
+        printf("\n");
+    }
+
     return 0;
 }

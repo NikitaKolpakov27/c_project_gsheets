@@ -1,0 +1,3 @@
+D:\ProgTools\CMake\bin\cmake.exe -E rm -f CMakeFiles\google_sheets.dir/objects.a
+D:\ProgTools\mingw32\bin\ar.exe qc CMakeFiles\google_sheets.dir/objects.a @CMakeFiles\google_sheets.dir\objects1.rsp
+D:\ProgTools\mingw32\bin\gcc.exe -O3 -DNDEBUG -Wl,--whole-archive CMakeFiles\google_sheets.dir/objects.a -Wl,--no-whole-archive -o google_sheets.exe -Wl,--out-implib,libgoogle_sheets.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\google_sheets.dir\linkLibs.rsp

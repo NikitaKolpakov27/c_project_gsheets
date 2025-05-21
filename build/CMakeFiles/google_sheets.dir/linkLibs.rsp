@@ -1,0 +1,1 @@
+ "C:/Users/MateBook/Desktop/c_project_gsheets-main/third_party/curl/bin/libcurl.dll" -lwldap32 -lws2_32 -lcrypt32 -ladvapi32 -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 

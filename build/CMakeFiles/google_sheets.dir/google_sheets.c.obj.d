@@ -1,0 +1,87 @@
+CMakeFiles/google_sheets.dir/google_sheets.c.obj: \
+ C:\Users\MateBook\Desktop\c_project_gsheets-main\google_sheets.c \
+ d:\progtools\mingw32\lib\gcc\mingw32\6.3.0\include\stddef.h \
+ d:\progtools\mingw32\include\stdio.h \
+ d:\progtools\mingw32\include\_mingw.h \
+ d:\progtools\mingw32\include\msvcrtver.h \
+ d:\progtools\mingw32\include\w32api.h \
+ d:\progtools\mingw32\include\sdkddkver.h \
+ d:\progtools\mingw32\include\sys/types.h \
+ d:\progtools\mingw32\lib\gcc\mingw32\6.3.0\include\stdarg.h \
+ d:\progtools\mingw32\include\stdlib.h \
+ d:\progtools\mingw32\include\string.h \
+ d:\progtools\mingw32\include\strings.h \
+ d:\progtools\mingw32\include\wchar.h d:\progtools\mingw32\include\math.h \
+ C:/Users/MateBook/Desktop/c_project_gsheets-main/third_party/curl/include/curl/curl.h \
+ C:/Users/MateBook/Desktop/c_project_gsheets-main/third_party/curl/include/curl/curlver.h \
+ C:/Users/MateBook/Desktop/c_project_gsheets-main/third_party/curl/include/curl/system.h \
+ d:\progtools\mingw32\include\inttypes.h \
+ d:\progtools\mingw32\lib\gcc\mingw32\6.3.0\include\stdint.h \
+ d:\progtools\mingw32\include\stdint.h \
+ d:\progtools\mingw32\include\sys\types.h \
+ d:\progtools\mingw32\include\limits.h \
+ d:\progtools\mingw32\include\time.h \
+ d:\progtools\mingw32\include\winsock2.h \
+ d:\progtools\mingw32\include\winsock.h \
+ d:\progtools\mingw32\include\windows.h \
+ d:\progtools\mingw32\include\windef.h \
+ d:\progtools\mingw32\include\winnt.h \
+ d:\progtools\mingw32\include\winerror.h \
+ d:\progtools\mingw32\include\basetsd.h \
+ d:\progtools\mingw32\include\pshpack4.h \
+ d:\progtools\mingw32\include\poppack.h \
+ d:\progtools\mingw32\include\wincon.h \
+ d:\progtools\mingw32\include\winbase.h \
+ d:\progtools\mingw32\include\wingdi.h \
+ d:\progtools\mingw32\include\winuser.h \
+ d:\progtools\mingw32\include\dbt.h d:\progtools\mingw32\include\winnls.h \
+ d:\progtools\mingw32\include\winver.h \
+ d:\progtools\mingw32\include\winnetwk.h \
+ d:\progtools\mingw32\include\winreg.h \
+ d:\progtools\mingw32\include\winsvc.h \
+ d:\progtools\mingw32\include\cderr.h d:\progtools\mingw32\include\dde.h \
+ d:\progtools\mingw32\include\ddeml.h d:\progtools\mingw32\include\dlgs.h \
+ d:\progtools\mingw32\include\imm.h \
+ d:\progtools\mingw32\include\lzexpand.h \
+ d:\progtools\mingw32\include\mmsystem.h \
+ d:\progtools\mingw32\include\nb30.h d:\progtools\mingw32\include\rpc.h \
+ d:\progtools\mingw32\include\rpcdce.h \
+ d:\progtools\mingw32\include\basetyps.h \
+ d:\progtools\mingw32\include\rpcdcep.h \
+ d:\progtools\mingw32\include\rpcnsi.h \
+ d:\progtools\mingw32\include\rpcnterr.h \
+ d:\progtools\mingw32\include\shellapi.h \
+ d:\progtools\mingw32\include\pshpack2.h \
+ d:\progtools\mingw32\include\winperf.h \
+ d:\progtools\mingw32\include\commdlg.h \
+ d:\progtools\mingw32\include\unknwn.h \
+ d:\progtools\mingw32\include\objfwd.h \
+ d:\progtools\mingw32\include\wtypes.h \
+ d:\progtools\mingw32\include\rpcndr.h \
+ d:\progtools\mingw32\include\rpcnsip.h \
+ d:\progtools\mingw32\include\prsht.h \
+ d:\progtools\mingw32\include\winspool.h \
+ d:\progtools\mingw32\include\_winsock.h \
+ d:\progtools\mingw32\include\ole2.h \
+ d:\progtools\mingw32\include\objbase.h \
+ d:\progtools\mingw32\include\objidl.h \
+ d:\progtools\mingw32\include\cguid.h \
+ d:\progtools\mingw32\include\olectlid.h \
+ d:\progtools\mingw32\include\oleauto.h \
+ d:\progtools\mingw32\include\oaidl.h \
+ d:\progtools\mingw32\include\oleidl.h \
+ d:\progtools\mingw32\include\sys\bsdtypes.h \
+ d:\progtools\mingw32\include\sys\time.h \
+ d:\progtools\mingw32\include\nspapi.h \
+ d:\progtools\mingw32\include\wtypes.h \
+ d:\progtools\mingw32\include\ws2tcpip.h \
+ C:/Users/MateBook/Desktop/c_project_gsheets-main/third_party/curl/include/curl/easy.h \
+ C:/Users/MateBook/Desktop/c_project_gsheets-main/third_party/curl/include/curl/multi.h \
+ C:/Users/MateBook/Desktop/c_project_gsheets-main/third_party/curl/include/curl/curl.h \
+ C:/Users/MateBook/Desktop/c_project_gsheets-main/third_party/curl/include/curl/urlapi.h \
+ C:/Users/MateBook/Desktop/c_project_gsheets-main/third_party/curl/include/curl/options.h \
+ C:/Users/MateBook/Desktop/c_project_gsheets-main/third_party/curl/include/curl/header.h \
+ C:/Users/MateBook/Desktop/c_project_gsheets-main/third_party/curl/include/curl/websockets.h \
+ C:/Users/MateBook/Desktop/c_project_gsheets-main/third_party/curl/include/curl/mprintf.h \
+ C:/Users/MateBook/Desktop/c_project_gsheets-main/third_party/curl/include/curl/typecheck-gcc.h \
+ C:/Users/MateBook/Desktop/c_project_gsheets-main/third_party/cJSON-master/cJSON.h

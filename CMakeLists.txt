@@ -7,7 +7,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 # Указываем пути к cURL
 set(CURL_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third_party/curl")
 set(CURL_INCLUDE_DIR "${CURL_ROOT}/include")  # Путь до include (без /curl!)
-set(CURL_LIBRARY "${CURL_ROOT}/lib/libcurl.dll.a")  # Для MSVC
+set(CURL_LIBRARY "${CURL_ROOT}/bin/libcurl.dll")  # Для MSVC
 
 # Указываем пути к cjson
 set(CJSON_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third_party/cJSON-master")
