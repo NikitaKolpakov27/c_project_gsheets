@@ -51,10 +51,29 @@ static size_t write_callback(char* ptr, size_t size, size_t nmemb, void* userdat
     return size * nmemb;
 }
 
+// static char* build_auth_header(GSheetClient* client) {
+//     char* header = malloc(128);
+//     snprintf(header, 128, "Authorization: Bearer %s", client->access_token);
+//     return header;
+// }
+
+// Вспомогательная функция. Делает хедер для авторизации
 static char* build_auth_header(GSheetClient* client) {
-    char* header = malloc(128);
-    snprintf(header, 128, "Authorization: Bearer %s", client->access_token);
+    const size_t header_len = strlen("Authorization: Bearer ") + strlen(client->access_token) + 1;
+    char* header = malloc(header_len);
+    snprintf(header, header_len, "Authorization: Bearer %s", client->access_token);
     return header;
+}
+
+// Вспомогательная функция. Выводим спарсенные данные
+static void print_data_from_gsheet(SheetRange* data, const char* range) {
+    printf("Data from range %s:\n", range);
+    for (size_t i = 0; i < data->rows; i++) {
+        for (size_t j = 0; j < data->cols; j++) {
+            printf("%-20s", data->data[i][j]);
+        }
+        printf("\n");
+    }
 }
 
 void gsheet_free(GSheetClient* client) {
@@ -88,63 +107,134 @@ GSheetClient* gsheet_init(const char* access_token, const char* spreadsheet_id) 
 // 2. read gsheet in specified range
 SheetRange* gsheet_read_range(GSheetClient* client, const char* range) {
     CURL* curl = curl_easy_init();
+    if (!curl) {
+        fprintf(stderr, "Failed to initialize CURL\n");
+        return NULL;
+    }
+
     char* response = NULL;
-    char url[256];
     long http_code = 0;
-
-    snprintf(url, sizeof(url),
-        "https://sheets.googleapis.com/v4/spreadsheets/%s/values/%s",
-        client->spreadsheet_id, range
-    );
-
+    CURLcode res = CURLE_OK;
+    char url[1024];
     struct curl_slist* headers = NULL;
-    headers = curl_slist_append(headers, build_auth_header(client));
 
+    // Формирование URL
+    snprintf(url, sizeof(url), 
+        "https://sheets.googleapis.com/v4/spreadsheets/%s/values/%s",
+        client->spreadsheet_id, range);
+
+    // Установка заголовков
+    headers = curl_slist_append(headers, build_auth_header(client));
+    
+    // Настройка параметров CURL
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L); // Включить подробное логирование
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L); // Таймаут 10 секунд
+    // Отключаем для проверки без SSL
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
 
-    CURLcode res = curl_easy_perform(curl);
-
-    // Получите HTTP-статус ответа
+    // Выполнение запроса
+    res = curl_easy_perform(curl);
+    
+    // Получение HTTP-статуса
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
-    printf("[DEBUG] HTTP Status: %ld\n", http_code);
-    printf("[DEBUG] Response: %s\n", response);
 
-    SheetRange* result = NULL;
-    if (res == CURLE_OK && http_code == 200 && response) {
-        cJSON* root = cJSON_Parse(response);
-        if (root) {
-            cJSON* values = cJSON_GetObjectItem(root, "values");
-            if (values && cJSON_IsArray(values)) {
-                result = malloc(sizeof(SheetRange));
-                result->rows = cJSON_GetArraySize(values);
-                result->cols = 0;
-                result->data = malloc(result->rows * sizeof(char**));
-
-                for (size_t i = 0; i < result->rows; i++) {
-                    cJSON* row = cJSON_GetArrayItem(values, i);
-                    if (row && cJSON_IsArray(row)) {
-                        result->data[i] = malloc(cJSON_GetArraySize(row) * sizeof(char*));
-                        result->cols = cJSON_GetArraySize(row);
-
-                        for (size_t j = 0; j < result->cols; j++) {
-                            cJSON* cell = cJSON_GetArrayItem(row, j);
-                            result->data[i][j] = strdup(cJSON_GetStringValue(cell));
-                        }
-                    }
-                }
-            }
-            cJSON_Delete(root);
+    // Расширенная диагностика
+    if (res != CURLE_OK) {
+        fprintf(stderr, "CURL error: %s\n", curl_easy_strerror(res));
+        
+        // Дополнительная информация для частых ошибок
+        if (res == CURLE_COULDNT_RESOLVE_HOST) {
+            fprintf(stderr, "Check internet connection\n");
         }
-    } else {
+        else if (res == CURLE_SSL_CONNECT_ERROR) {
+            fprintf(stderr, "SSL/TLS handshake failed\n");
+        }
+    }
+
+    // Обработка HTTP-статусов
+    if (http_code != 200 && http_code != 0) {
         fprintf(stderr, "HTTP Error: %ld\n", http_code);
         if (response) fprintf(stderr, "Response: %s\n", response);
     }
 
+    SheetRange* result = NULL;
+    if (res == CURLE_OK && http_code == 200 && response) {
+
+        // Парсинг ответа
+        cJSON* root = cJSON_Parse(response);
+        if (!root) {
+            fprintf(stderr, "Failed to parse JSON response\n");
+        }
+        else {
+            cJSON* values = cJSON_GetObjectItem(root, "values");
+            if (!values) {
+                fprintf(stderr, "No 'values' field in response\n");
+                if (cJSON_HasObjectItem(root, "error")) {
+                    const char* error_msg = cJSON_GetObjectItem(root, "error")->valuestring;
+                    fprintf(stderr, "API Error: %s\n", error_msg);
+                }
+            }
+
+            // Создание структуры данных
+            result = malloc(sizeof(SheetRange));
+            result->rows = cJSON_GetArraySize(values);
+            result->cols = 0;
+            result->data = NULL;
+
+            if (result->rows == 0) {
+                cJSON_Delete(root);
+            }
+
+            // Первый проход: определение максимального количества столбцов
+            for (int i = 0; i < result->rows; i++) {
+                cJSON* row = cJSON_GetArrayItem(values, i);
+                if (cJSON_IsArray(row)) {
+                    int cols = cJSON_GetArraySize(row);
+                    if (cols > result->cols) {
+                        result->cols = cols;
+                    }
+                }
+            }
+
+            // Выделение памяти
+            result->data = malloc(sizeof(char**) * result->rows);
+            for (int i = 0; i < result->rows; i++) {
+                result->data[i] = malloc(sizeof(char*) * result->cols);
+                // Инициализация NULL
+                memset(result->data[i], 0, sizeof(char*) * result->cols);
+            }
+
+            // Второй проход: заполнение данными
+            for (int i = 0; i < result->rows; i++) {
+                cJSON* row = cJSON_GetArrayItem(values, i);
+                if (!cJSON_IsArray(row)) continue;
+
+                for (int j = 0; j < result->cols; j++) {
+                    cJSON* cell = cJSON_GetArrayItem(row, j);
+                    if (cJSON_IsString(cell)) {
+                        // Копирование строки
+                        result->data[i][j] = strdup(cell->valuestring);
+                    } else {
+                        // Пустые ячейки или нестроковые значения
+                        result->data[i][j] = strdup("");
+                    }
+                }
+            }
+
+            cJSON_Delete(root);
+        }
+    }
+
+    // Очистка ресурсов
     curl_easy_cleanup(curl);
+    curl_slist_free_all(headers);
     free(response);
+
     return result;
 }
 
@@ -517,8 +607,8 @@ boolean gsheet_export_csv(GSheetClient* client, const char* range, const char* f
 int main() {
     
     // Инициализация клиента
-    const char* access_token = "";
-    const char* spreadsheet_id = "";
+    const char* access_token = "token";
+    const char* spreadsheet_id = "1gr3rYU-EHI8XVsFrkHJy2VTpQhFWEiDN1wxXwgqV1lg";
     GSheetClient* client = gsheet_init(access_token, spreadsheet_id);
     
     if (!client) {
@@ -526,7 +616,7 @@ int main() {
         return 1;
     }
 
-    // Чтение данных из диапазона (например, лист "Sheet1", ячейки A1:C10)
+    // Чтение данных из диапазона
     const char* range = "Sheet1!A1:E1";
     SheetRange* data = gsheet_read_range(client, range);
 
@@ -536,13 +626,7 @@ int main() {
     }
 
     // Вывод данных в консоль
-    printf("Data from range %s:\n", range);
-    for (size_t i = 0; i < data->rows; i++) {
-        for (size_t j = 0; j < data->cols; j++) {
-            printf("%-20s", data->data[i][j]); // Форматированный вывод
-        }
-        printf("\n");
-    }
+    print_data_from_gsheet(data, range);
 
     return 0;
 }
